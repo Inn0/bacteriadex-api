@@ -1,5 +1,5 @@
 import { Router } from "express";
-import BacteriaController from "../controllers/bacteriaController";
+import BacteriaController from "../controllers/BacteriaController";
 
 class BacteriaRoutes {
 	private controller: BacteriaController;

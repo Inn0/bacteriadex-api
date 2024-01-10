@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import BacteriaService from "../services/bacteriaService";
-import { ErrorResponse } from "../models/ErrorResponse";
+import BacteriaService from "../services/BacteriaService";
 import { ErrorHandler } from "../utils/errors/ErrorHandler";
 
 class BacteriaController {

@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import BacteriaRoutes from "./routes/bacteriaRoutes";
+import BacteriaRoutes from "./routes/BacteriaRoutes";
 
 dotenv.config();
 
