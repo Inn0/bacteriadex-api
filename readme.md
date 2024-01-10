@@ -30,3 +30,9 @@ To start the project after compiling it to valid JavaScript run the following co
 ```
 npm run start
 ```
+
+## Endpoints
+
+| Endpoint    | HTTP Method | Parameters | Example                |
+| ----------- | ----------- | ---------- | ---------------------- |
+| `/bacteria` | GET         | range      | `/bacteria?range=0,30` |
