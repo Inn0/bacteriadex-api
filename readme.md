@@ -33,6 +33,12 @@ npm run start
 
 ## Endpoints
 
-| Endpoint    | HTTP Method | Parameters | Example                |
-| ----------- | ----------- | ---------- | ---------------------- |
-| `/bacteria` | GET         | range      | `/bacteria?range=0,30` |
+| Endpoint               | HTTP Method | Parameters | Example                           |
+| ---------------------- | ----------- | ---------- | --------------------------------- |
+| `/bacteria`            | GET         | range      | `/bacteria?range=0,30`            |
+| `/bacteria/name/:name` | GET         | :name      | `/bacteria/name/Escherichia coli` |
+
+## Endpoints still to be implemented
+
+-   [ ] Fetch bacteria by ID (more information)
+-   [ ] Search for a bacteria

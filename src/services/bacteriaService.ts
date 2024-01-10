@@ -1,6 +1,12 @@
 import { Bacteria } from "../models/Bacteria";
+import { NotFoundError } from "../utils/errors/CustomErrors";
 
 class BacteriaService {
+	private efetchUrl =
+		"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
+	private esearchUrl =
+		"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi";
+
 	private transformData(textData: string): string[] {
 		const lines = textData.split("\n");
 		const bacteriaList: string[] = [];
@@ -16,8 +22,10 @@ class BacteriaService {
 		return bacteriaList;
 	}
 
-	async getBacteriaData(rangeStart: number = 0, rangeEnd: number = 100) {
-		// Prepare search parameters
+	async getBacteriaDataWithRange(
+		rangeStart: number = 0,
+		rangeEnd: number = 100
+	): Promise<Bacteria[]> {
 		const params = new URLSearchParams({
 			db: "taxonomy",
 			term: "bacteria[organism]",
@@ -27,24 +35,45 @@ class BacteriaService {
 		});
 
 		// Search for all bacteria records
-		const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?${params.toString()}`;
-		const searchResponse = await fetch(searchUrl);
-		const searchData = await searchResponse.json();
-		const ids = searchData.esearchresult.idlist.join(",");
+		const url = `${this.efetchUrl}?${params.toString()}`;
+		const response = await fetch(url);
+		const result = await response.json();
+		const ids = result.esearchresult.idlist.join(",");
 
 		// Fetch names for ids
-		const fetchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=${ids}&retmode=json&rettype=taxonomy`;
-		const fetchResponse = await fetch(fetchUrl);
-		const bacteriaData = await fetchResponse.text();
+		const idUrl = `${this.efetchUrl}?db=taxonomy&id=${ids}&retmode=json&rettype=taxonomy`;
+		const idResponse = await fetch(idUrl);
+		const bacteriaData = await idResponse.text();
 		const transformedNames = this.transformData(bacteriaData);
 
 		// Combine IDs and transformed names into an array of Bacteria objects
-		const bacteria = searchData.esearchresult.idlist.map(
+		const bacteria = result.esearchresult.idlist.map(
 			(id: number, index: number) =>
 				new Bacteria(id, transformedNames[index])
 		);
 
 		return bacteria;
+	}
+
+	async getBacteriaByName(name: string): Promise<Bacteria> {
+		const formattedName = name.replace(" ", "+") + "[Organism]";
+		const params = new URLSearchParams({
+			db: "genome",
+			term: formattedName,
+			retmode: "json",
+		});
+
+		const searchUrl = `${this.esearchUrl}?${params.toString()}`;
+		const response = await fetch(searchUrl);
+		const result = await response.json();
+
+		if (result.esearchresult.count == 0) {
+			throw new NotFoundError(
+				`Bacteria with name ${name} was not found!`
+			);
+		}
+
+		return new Bacteria(result.esearchresult.idlist[0], name);
 	}
 }
 
