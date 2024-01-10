@@ -35,7 +35,7 @@ class BacteriaService {
 		});
 
 		// Search for all bacteria records
-		const url = `${this.efetchUrl}?${params.toString()}`;
+		const url = `${this.esearchUrl}?${params.toString()}`;
 		const response = await fetch(url);
 		const result = await response.json();
 		const ids = result.esearchresult.idlist.join(",");
