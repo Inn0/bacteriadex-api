@@ -16,7 +16,7 @@ class BacteriaRoutes {
 	private initializeRoutes() {
 		this.router.get(this.routeString, this.controller.fetchBacteriaData);
 		this.router.get(
-			this.routeString + "/name/:name",
+			this.routeString + "/search/:name",
 			this.controller.fetchBacteriaByName
 		);
 	}

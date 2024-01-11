@@ -34,7 +34,7 @@ class BacteriaController {
 
 	fetchBacteriaByName = async (req: Request, res: Response) => {
 		try {
-			const bacteria = await this.bacteriaService.getBacteriaByName(
+			const bacteria = await this.bacteriaService.searchForBacteriaByName(
 				req.params.name
 			);
 			res.send(bacteria);

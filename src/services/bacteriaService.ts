@@ -22,6 +22,23 @@ class BacteriaService {
 		return bacteriaList;
 	}
 
+	private async getBacteriaNamesByIds(ids: number[]) {
+		const params = new URLSearchParams({
+			db: "taxonomy",
+			retmode: "json",
+			rettype: "taxonomy",
+		});
+
+		const idUrl = `${this.efetchUrl}?${params.toString()}&id=${ids}`;
+		const idResponse = await fetch(idUrl);
+		const bacteriaData = await idResponse.text();
+		return this.transformData(bacteriaData);
+	}
+
+	private createBacteriaList(ids: number[], names: string[]): Bacteria[] {
+		return ids.map((id, index) => new Bacteria(id, names[index]));
+	}
+
 	async getBacteriaDataWithRange(
 		rangeStart: number = 0,
 		rangeEnd: number = 100
@@ -30,37 +47,27 @@ class BacteriaService {
 			db: "taxonomy",
 			term: "bacteria[organism]",
 			retmode: "json",
-			retmax: rangeEnd.toString(),
+			retmax: (rangeEnd - rangeStart).toString(),
 			retstart: rangeStart.toString(),
 		});
 
-		// Search for all bacteria records
 		const url = `${this.esearchUrl}?${params.toString()}`;
 		const response = await fetch(url);
 		const result = await response.json();
 		const ids = result.esearchresult.idlist.join(",");
 
-		// Fetch names for ids
-		const idUrl = `${this.efetchUrl}?db=taxonomy&id=${ids}&retmode=json&rettype=taxonomy`;
-		const idResponse = await fetch(idUrl);
-		const bacteriaData = await idResponse.text();
-		const transformedNames = this.transformData(bacteriaData);
+		const names = await this.getBacteriaNamesByIds(ids);
 
-		// Combine IDs and transformed names into an array of Bacteria objects
-		const bacteria = result.esearchresult.idlist.map(
-			(id: number, index: number) =>
-				new Bacteria(id, transformedNames[index])
-		);
-
-		return bacteria;
+		return this.createBacteriaList(result.esearchresult.idlist, names);
 	}
 
-	async getBacteriaByName(name: string): Promise<Bacteria> {
+	async searchForBacteriaByName(name: string) {
 		const formattedName = name.replace(" ", "+") + "[Organism]";
 		const params = new URLSearchParams({
-			db: "genome",
+			db: "taxonomy",
 			term: formattedName,
 			retmode: "json",
+			retmax: "100",
 		});
 
 		const searchUrl = `${this.esearchUrl}?${params.toString()}`;
@@ -73,7 +80,10 @@ class BacteriaService {
 			);
 		}
 
-		return new Bacteria(result.esearchresult.idlist[0], name);
+		const ids = result.esearchresult.idlist.map((str: string) => +str);
+
+		const names = await this.getBacteriaNamesByIds(ids);
+		return this.createBacteriaList(result.esearchresult.idlist, names);
 	}
 }
 
